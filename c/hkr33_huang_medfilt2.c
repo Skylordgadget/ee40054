@@ -1,18 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-
-struct dims
-{
-    int M;
-    int N;  
-};
-
-struct window_edge 
-{
-    uint8_t** old;
-    uint8_t** new;
-};
+#include <hkr33_huang_medfilt2.h>
 
 void free_2d_uint8_array(uint8_t** array, int rows) {
     for (int i = 0; i < rows; i++) {
@@ -83,7 +72,7 @@ int** hkr33_zigzag(struct dims* img_size, int K) {
     }
 
 
-    debug_display_int_array(indices,&indices_size);
+    //debug_display_int_array(indices,&indices_size);
 
     return indices;
 }
@@ -100,28 +89,28 @@ struct window_edge* hkr33_strip(int** indices, int i, int K) {
     
     struct dims edge_size;
     edge_size.M = K; edge_size.N = 2;
-    edge->new = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
+    edge->n = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
     for (int j = 0; j < edge_size.M; j++) {
-        edge->new[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
+        edge->n[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
     }
 
-    edge->old = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
+    edge->o = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
     for (int j = 0; j < edge_size.M; j++) {
-        edge->old[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
+        edge->o[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
     }
 
     int cnt = 0;
 
     if (dir_y == 0) {
         for (int yy = y-K_pad; yy < y+K_pad+1; yy++) {
-            edge->old[cnt][0] = yy; edge->old[cnt][1] = x - dir_x * (K_pad+1);
-            edge->new[cnt][0] = yy; edge->new[cnt][1] = x + dir_x * K_pad;
+            edge->o[cnt][0] = yy; edge->o[cnt][1] = x - dir_x * (K_pad+1);
+            edge->n[cnt][0] = yy; edge->n[cnt][1] = x + dir_x * K_pad;
             cnt++;
         }
     } else {
         for (int xx = x-K_pad; xx < x+K_pad+1; xx++) {
-            edge->old[cnt][0] = y - dir_y * (K_pad+1); edge->old[cnt][1] = xx;
-            edge->new[cnt][0] = y + dir_y * K_pad; edge->new[cnt][1] = xx;
+            edge->o[cnt][0] = y - dir_y * (K_pad+1); edge->o[cnt][1] = xx;
+            edge->n[cnt][0] = y + dir_y * K_pad; edge->n[cnt][1] = xx;
             cnt++;
         }
     }
@@ -177,11 +166,11 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
         edge = hkr33_strip(indices,i,K);
 
         for (int j = 0; j < K; j++) {
-            int yy = edge->old[j][0]; int xx = edge->old[j][1];
+            int yy = edge->o[j][0]; int xx = edge->o[j][1];
             histogram[img_pad[yy][xx]]--;
             if (img_pad[yy][xx] < mdn) {ltmdn--;}
 
-            yy = edge->new[j][0]; xx = edge->new[j][1];
+            yy = edge->n[j][0]; xx = edge->n[j][1];
             histogram[img_pad[yy][xx]]++;
             if (img_pad[yy][xx] < mdn) {ltmdn++;}
         }
@@ -201,8 +190,8 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
     return filtered_img;
 
     free_2d_int_array(indices,(M*N));
-    free_2d_uint8_array(edge->new,K);
-    free_2d_uint8_array(edge->old,K);
+    free_2d_uint8_array(edge->n,K);
+    free_2d_uint8_array(edge->o,K);
 }
 
 

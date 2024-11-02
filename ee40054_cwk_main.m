@@ -17,8 +17,12 @@ simple_filt = ones(11)./121;
 
 % my_filt = @(img) hkr33_imfilter(img, simple_filt);
 % mat_filt = @(img) hkr33_conv2(img, simple_filt);
-%
-my_filt = hkr33_huang_medfilt2(original_foetus_uint8, 11);
+
+K = 11;
+K_pad = floor(K / 2);
+img_pad = padarray(original_foetus_uint8,[K_pad K_pad],0,'both');
+
+my_filt = hkr33_huang_medfilt2_c(img_pad, int32(K));
 mat_filt = medfilt2(original_foetus, [11,11]);
 
 indices = hkr33_zigzag(size(original_foetus),11);

@@ -6,6 +6,7 @@
             "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
             "args": [
                 "-I${workspaceFolder}/c/inc",
+                "-IC:/Program Files/MATLAB/R2024a/extern/include",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",

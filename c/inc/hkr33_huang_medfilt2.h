@@ -11,8 +11,8 @@
 
     struct window_edge 
     {
-        uint8_t** o;
-        uint8_t** n;
+        int** o;
+        int** n;
     };
 
     void free_2d_uint8_array(uint8_t** array, int rows);

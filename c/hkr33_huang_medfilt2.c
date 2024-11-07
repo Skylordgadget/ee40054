@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <hkr33_huang_medfilt2.h>
+#include "mex.h"
 
 void free_2d_uint8_array(uint8_t** array, int rows) {
     for (int i = 0; i < rows; i++) {
@@ -89,14 +90,14 @@ struct window_edge* hkr33_strip(int** indices, int i, int K) {
     
     struct dims edge_size;
     edge_size.M = K; edge_size.N = 2;
-    edge->n = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
+    edge->n = (int**) malloc(edge_size.M * sizeof(int*));
     for (int j = 0; j < edge_size.M; j++) {
-        edge->n[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
+        edge->n[j] = (int*) malloc(edge_size.N * sizeof(int));
     }
 
-    edge->o = (uint8_t**) malloc(edge_size.M * sizeof(uint8_t*));
+    edge->o = (int**) malloc(edge_size.M * sizeof(int*));
     for (int j = 0; j < edge_size.M; j++) {
-        edge->o[j] = (uint8_t*) malloc(edge_size.N * sizeof(uint8_t));
+        edge->o[j] = (int*) malloc(edge_size.N * sizeof(int));
     }
 
     int cnt = 0;
@@ -160,11 +161,10 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
 
     struct window_edge* edge;
 
-    for (int i = 1; i < (M*N); i++) {
+    for (int i = 1; i < M*N; i++) {
         int y = indices[i][0]; int x = indices[i][1];
-
+        //printf("y: %d x: %d \n", y, x);
         edge = hkr33_strip(indices,i,K);
-
         for (int j = 0; j < K; j++) {
             int yy = edge->o[j][0]; int xx = edge->o[j][1];
             histogram[img_pad[yy][xx]]--;
@@ -187,49 +187,49 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
         filtered_img[y-K_pad][x-K_pad] = mdn;
     }
 
+    free_2d_int_array(indices, M*N);
+    free_2d_int_array(edge->n, K);
+    free_2d_int_array(edge->o, K);
+
     return filtered_img;
-
-    free_2d_int_array(indices,(M*N));
-    free_2d_uint8_array(edge->n,K);
-    free_2d_uint8_array(edge->o,K);
 }
 
 
 
-int main () {
-    struct dims img_pad_size;
-    img_pad_size.M = 11; img_pad_size.N = 11;
+// int main () {
+//     struct dims img_pad_size;
+//     img_pad_size.M = 11; img_pad_size.N = 11;
 
-    struct dims img_filt_size;
-    img_filt_size.M = 9; img_filt_size.N = 9;
+//     struct dims img_filt_size;
+//     img_filt_size.M = 9; img_filt_size.N = 9;
 
-    uint8_t** img_pad = (uint8_t**) malloc(img_pad_size.M * sizeof(uint8_t*));
-    for (int i = 0; i < img_pad_size.M; i++) {
-        img_pad[i] = (uint8_t*) malloc(img_pad_size.N * sizeof(uint8_t));
-    }
+//     uint8_t** img_pad = (uint8_t**) malloc(img_pad_size.M * sizeof(uint8_t*));
+//     for (int i = 0; i < img_pad_size.M; i++) {
+//         img_pad[i] = (uint8_t*) malloc(img_pad_size.N * sizeof(uint8_t));
+//     }
 
-    uint8_t** img_filt = (uint8_t**) malloc(img_filt_size.M * sizeof(uint8_t*));
-    for (int i = 0; i < img_filt_size.M; i++) {
-        img_filt[i] = (uint8_t*) malloc(img_filt_size.N * sizeof(uint8_t));
-    }    
+//     uint8_t** img_filt = (uint8_t**) malloc(img_filt_size.M * sizeof(uint8_t*));
+//     for (int i = 0; i < img_filt_size.M; i++) {
+//         img_filt[i] = (uint8_t*) malloc(img_filt_size.N * sizeof(uint8_t));
+//     }    
     
 
-    for (int i = 0; i < img_pad_size.M; i++) {
-        for (int j = 0; j < img_pad_size.N; j++) {
-            if (((i > 0) && (i < 4)) && ((j > 0) && (j < 4))) {
-                img_pad[i][j] = 0xFF;
-            } else {
-                img_pad[i][j] = 0x00;
-            }
-        }
-    }
+//     for (int i = 0; i < img_pad_size.M; i++) {
+//         for (int j = 0; j < img_pad_size.N; j++) {
+//             if (((i > 0) && (i < 4)) && ((j > 0) && (j < 4))) {
+//                 img_pad[i][j] = 0xFF;
+//             } else {
+//                 img_pad[i][j] = 0x00;
+//             }
+//         }
+//     }
     
-    img_filt = hkr33_huang_medfilt2(img_pad,&img_pad_size,3);
+//     img_filt = hkr33_huang_medfilt2(img_pad,&img_pad_size,3);
 
-    debug_display_uint8_array(img_pad,&img_pad_size);
-    debug_display_uint8_array(img_filt,&img_filt_size);
-    printf("\n\n");
-    free_2d_uint8_array(img_pad,img_pad_size.M);
-    free_2d_uint8_array(img_filt,img_filt_size.M);
-}
+//     debug_display_uint8_array(img_pad,&img_pad_size);
+//     debug_display_uint8_array(img_filt,&img_filt_size);
+//     printf("\n\n");
+//     free_2d_uint8_array(img_pad,img_pad_size.M);
+//     free_2d_uint8_array(img_filt,img_filt_size.M);
+// }
 

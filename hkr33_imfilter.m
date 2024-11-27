@@ -1,22 +1,19 @@
-function filtered_img = hkr33_imfilter(img, kernel)
+function filtered_img = hkr33_imfilter(img, kernel, kernel_size)
     img = double(img); kernel = double(kernel); % convert to double    
 
-    [K, L] = size(kernel); % get the length and width of the kernel
+    % compute the amount of pading needed either side of the image
+    half_size = floor(kernel_size / 2);
 
-    % compute the padding length and width
-    pad_const = int16(2);
-    K_pad = double(idivide(int16(K), pad_const)); 
-    L_pad = double(idivide(int16(L), pad_const));
-
-    % pad the image borders with zeros
-    img_pad = padarray(img,[K_pad L_pad],0,'both');
+    % pad the image with zeros
+    img_pad = hkr33_pad(img,[kernel_size, kernel_size]);
     [M_pad, N_pad] = size(img_pad);
 
     % initialise an array as zeros with the same dimensions as the
     % padded image
     kernel_pad = zeros(M_pad,N_pad,'like',img_pad);
     % place the kernel into the top left of the array
-    kernel_pad(1:K, 1:L) = kernel(1:K, 1:L);
+    kernel_pad(1:kernel_size, 1:kernel_size) = ...
+                                    kernel(1:kernel_size, 1:kernel_size);
     
     % convert the image and kernel into the frequency domain
     img_fft = fft2(img_pad);
@@ -29,5 +26,5 @@ function filtered_img = hkr33_imfilter(img, kernel)
     ifft_conv = real(ifft2(fft_conv));
     
     % unpad and return the image
-    filtered_img = ifft_conv((K_pad*2)+1:M_pad, (L_pad*2)+1:N_pad);
+    filtered_img = ifft_conv((half_size*2)+1:M_pad, (half_size*2)+1:N_pad);
 end

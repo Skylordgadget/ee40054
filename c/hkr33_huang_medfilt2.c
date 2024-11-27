@@ -4,27 +4,30 @@
 #include <hkr33_huang_medfilt2.h>
 #include "mex.h"
 
+// free 2D uint8 arrays
 void free_2d_uint8_array(uint8_t** array, int rows) {
-    for (int i = 0; i < rows; i++) {
-        free(array[i]);
+    for (int i = 0; i < rows; i++) { 
+        free(array[i]); // free rows
     }
-    free(array);
+    free(array); // free columns
 }
 
+// free 2D int array
 void free_2d_int_array(int** array, int rows) {
-    for (int i = 0; i < rows; i++) {
-        free(array[i]);
+    for (int i = 0; i < rows; i++) { 
+        free(array[i]); // free rows
     }
-    free(array);
+    free(array); // free columns
 }
 
-
+// compare two uint8 (for the qsort function)
 int compare(const void* a, const void* b) {
     return (*(uint8_t*)a - *(uint8_t*)b);
 }
 
-
+// debug function not used anywhere in the MATLAB call
 void debug_display_int_array(int** array, struct dims* size) {
+    // for all rows and columns, print the pixel
     for (int i=0; i<size->M; i++) { 
         for (int j=0; j<size->N; j++) printf("%d ", array[i][j]);
         printf("\n");
@@ -32,8 +35,10 @@ void debug_display_int_array(int** array, struct dims* size) {
     printf("\n");
 }
 
+// debug function not used anywhere in the MATLAB call
 void debug_display_uint8_array(uint8_t** array, struct dims* size) {
     for (int i=0; i<size->M; i++) { 
+        // for all rows and columns, print the pixel
         for (int j=0; j<size->N; j++) printf("%d ", array[i][j]);
         printf("\n");
     }
@@ -41,28 +46,32 @@ void debug_display_uint8_array(uint8_t** array, struct dims* size) {
 }
 
 int** hkr33_zigzag(struct dims* img_size, int K) {
+    // generate a 2D array of indices to loop over in the main program 
     struct dims indices_size;
     int K_pad = K / 2;
+
+    // the size of the indices array is (the number of pixels in the image) by 2
     indices_size.M = ((img_size->M - (K_pad * 2)) * (img_size->N - (K_pad * 2))); indices_size.N = 2;
     
+    // allocate memory for the indices
     int** indices = (int**) malloc(indices_size.M * sizeof(int*));
     for (int i = 0; i < indices_size.M; i++) {
         indices[i] = (int*) malloc(indices_size.N * sizeof(int));
     }
 
-
-    
     int j_start, j_stop, j_delta;
     int cnt = 0;
     int row = 0;
+    // generate zig-zag pattern
     for (int i = K_pad; i < img_size->M - K_pad; i++) {
-
+        // for even rows increment (left->right)
         if (row%2==0) { 
             for (int j = K_pad; j < img_size->N - K_pad; j++) {
                 indices[cnt][0] = i; indices[cnt][1] = j;  
                 cnt++;
             }
         } 
+        // for odd rows decrement (left<-right)
         else { 
             for (int j = img_size->N - K_pad - 1; j > K_pad - 1; j--) {
                 indices[cnt][0] = i; indices[cnt][1] = j;  
@@ -90,6 +99,8 @@ struct window_edge* hkr33_strip(int** indices, int i, int K) {
     
     struct dims edge_size;
     edge_size.M = K; edge_size.N = 2;
+
+    // allocate memory for the edge indices arrays
     edge->n = (int**) malloc(edge_size.M * sizeof(int*));
     for (int j = 0; j < edge_size.M; j++) {
         edge->n[j] = (int*) malloc(edge_size.N * sizeof(int));
@@ -125,7 +136,7 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
     int M = M_pad - (K_pad * 2); int N = N_pad - (K_pad * 2);
     const int h = 256;
     uint8_t window[K*K];
-    uint8_t histogram[h];
+    int histogram[h];
     for (int i = 0; i < h; i++) {
         histogram[i] = 0;
     }
@@ -145,9 +156,9 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
     }
 
     qsort(window,cnt,sizeof(uint8_t),compare);
-    uint8_t th = (K*K) / 2;
+    int th = (K*K) / 2;
     uint8_t mdn = window[th];
-    uint8_t ltmdn = 0;
+    int ltmdn = 0;
 
     for (int y = 0; y < K; y++) {
         for (int x = 0; x < K; x++) {
@@ -195,6 +206,7 @@ uint8_t** hkr33_huang_medfilt2(uint8_t** img_pad, struct dims* img_pad_size, int
 }
 
 
+// old main function used in original testing
 
 // int main () {
 //     struct dims img_pad_size;

@@ -1,4 +1,4 @@
-function compareFunctionTimes(func1, func2, varargin)
+function [runtime1, runtime2]= compareFunctionTimes(func1, func2, varargin)
     % compareFunctionTimes times two functions using timeit and compares their execution times
     % 
     % Inputs:
@@ -28,4 +28,7 @@ function compareFunctionTimes(func1, func2, varargin)
     else
         disp('Both functions have the same execution time.');
     end
+
+    runtime1 = time1;
+    runtime2 = time2;
 end

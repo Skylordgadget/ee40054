@@ -3,5 +3,7 @@
         "hkr33_huang_medfilt2.h": "c",
         "mex.h": "c",
         "array": "c"
-    }
+    },
+
+    "workbench.colorTheme":"Monokai Night" 
 }

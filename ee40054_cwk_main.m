@@ -184,7 +184,7 @@ surf(kernel);
 title(["Gaussian High-Pass Kernel" i + "x" + i + " kernel, " + sigma + " sigma"])
 
 
-%% Sharpening
+%% Sharpening (Laplacian Mask)
 
 close all;
 
@@ -213,8 +213,8 @@ subtightplot(2,2,4);
 imshow(hkr33_imfilter(ultrasound_image,laplacian_mask,filter_size));
 title(filter_size + "x" + filter_size + " Laplacian Mask");
 
-
 %% Unsharp Masking
+
 close all;
 
 figure('Position', [0 0 1280 450])
@@ -576,7 +576,7 @@ xlim([131 240])
 ylim([92 160])
 
 subtightplot(2,5,3);
-i = 3;
+i = 7;
 imshow(hkr33_adaptive_weighted_median(sar_image,i,250,100));
 title(["Adaptive Weighted Median" i + "x" + i + " kernel, central weight " + 250 + ", constant " + 100]);
 xlim([131 240])
